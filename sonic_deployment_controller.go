@@ -320,29 +320,38 @@ func (c *SonicDaemonsetDeploymentController) updateFooStatus(foo *samplev1alpha1
 	// Or create a copy manually for better performance
 	logger := klog.LoggerWithValues(klog.FromContext(context.TODO()), "resourceName", foo.Name)
 	fooCopy := foo.DeepCopy()
-	dsMap := make(map[string]int)
-	for _, v := range fooCopy.Status.DaemonsetList {
-		dsMap[v.DaemonSetName] = 1
-	}
+	fooCopy.Status.DaemonsetList = []samplev1alpha1.DaemonSetItem{}
+	//dsMap := make(map[string]string)
 
-	updated := false
 	for _, v := range deployments {
-		if _, ok := dsMap[v.Name]; !ok {
-			updated = true
-			logger.Info(fmt.Sprintf("Add ds %s", v.Name))
-			dsMap[v.Name] = 1
-			fooCopy.Status.DaemonsetList = append(fooCopy.Status.DaemonsetList, samplev1alpha1.DaemonSetItem{DaemonSetName: v.Name, DaemonSetVersion: v.Spec.Template.Spec.Containers[0].Image})
-		}
-
+		fooCopy.Status.DaemonsetList = append(fooCopy.Status.DaemonsetList, samplev1alpha1.DaemonSetItem{DaemonSetName: v.Name, DaemonSetVersion: v.Spec.Template.Spec.Containers[0].Image})
+		/*
+			if _, ok := dsMap[v.Name]; !ok {
+				updated = true
+				logger.Info(fmt.Sprintf("Add ds %s", v.Name))
+				dsMap[v.Name] = v.Spec.Template.Spec.Containers[0].Image
+				fooCopy.Status.DaemonsetList = append(fooCopy.Status.DaemonsetList, samplev1alpha1.DaemonSetItem{DaemonSetName: v.Name, DaemonSetVersion: v.Spec.Template.Spec.Containers[0].Image})
+			} else {
+				if dsMap[v.Name] != v.Spec.Template.Spec.Containers[0].Image {
+					for _, d := range fooCopy.Status.DaemonsetList {
+						if d.DaemonSetName == v.Name {
+							d.DaemonSetVersion = dsMap[v.Name]
+						}
+					}
+				}
+			}
+		*/
 		// update daemonset if version is mismatch
 		if foo.Spec.DaemonSetVersion != v.Spec.Template.Spec.Containers[0].Image {
 			logger.Info(fmt.Sprintf("Need to update ds versoin for ds %s to %s", v.Name, foo.Spec.DaemonSetVersion))
 			c.updateDaemonset(v, foo.Spec.DaemonSetVersion)
 		}
 	}
-	if !updated {
-		return nil
-	}
+	/*
+		if !updated {
+			return nil
+		}
+	*/
 	// If the CustomResourceSubresources feature gate is not enabled,
 	// we must use Update instead of UpdateStatus to update the Status block of the Foo resource.
 	// UpdateStatus will not allow changes to the Spec of the resource,
