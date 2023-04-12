@@ -342,9 +342,16 @@ func (c *SonicDaemonsetDeploymentController) updateFooStatus(foo *samplev1alpha1
 			}
 		*/
 		// update daemonset if version is mismatch
+
+	}
+	_, err := c.sampleclientset.SonicV1alpha1().SonicDaemonSetDeployments(foo.Namespace).UpdateStatus(context.TODO(), fooCopy, metav1.UpdateOptions{})
+	//rolling update for daemonset
+	for _, v := range deployments {
 		if foo.Spec.DaemonSetVersion != v.Spec.Template.Spec.Containers[0].Image {
 			logger.Info(fmt.Sprintf("Need to update ds versoin for ds %s to %s", v.Name, foo.Spec.DaemonSetVersion))
 			c.updateDaemonset(v, foo.Spec.DaemonSetVersion)
+			time.Sleep(10 * time.Second)
+			break
 		}
 	}
 	/*
@@ -356,7 +363,7 @@ func (c *SonicDaemonsetDeploymentController) updateFooStatus(foo *samplev1alpha1
 	// we must use Update instead of UpdateStatus to update the Status block of the Foo resource.
 	// UpdateStatus will not allow changes to the Spec of the resource,
 	// which is ideal for ensuring nothing other than resource status has been updated.
-	_, err := c.sampleclientset.SonicV1alpha1().SonicDaemonSetDeployments(foo.Namespace).UpdateStatus(context.TODO(), fooCopy, metav1.UpdateOptions{})
+
 	return err
 }
 
