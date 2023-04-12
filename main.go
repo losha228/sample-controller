@@ -82,10 +82,12 @@ func main() {
 		kubeInformerFactory.Apps().V1().DaemonSets(),
 		sonicInformerFactory.Sonic().V1alpha1().SonicDaemonSetDeployments())
 
-	if err = sonicController.Run(ctx, 2); err != nil {
-		logger.Error(err, "Error running controller")
-		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
-	}
+	/*
+		if err = sonicController.Run(ctx, 2); err != nil {
+			logger.Error(err, "Error running controller")
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+		}
+	*/
 
 	controller := NewController(ctx, kubeClient, exampleClient,
 		kubeInformerFactory.Apps().V1().Deployments(),
@@ -95,6 +97,12 @@ func main() {
 	// Start method is non-blocking and runs all registered informers in a dedicated goroutine.
 	kubeInformerFactory.Start(ctx.Done())
 	exampleInformerFactory.Start(ctx.Done())
+	sonicInformerFactory.Start(ctx.Done())
+	//go sonicController.Run(ctx, 2)
+	if err = sonicController.Run(ctx, 2); err != nil {
+		logger.Error(err, "Error running sonic controller")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
 
 	if err = controller.Run(ctx, 2); err != nil {
 		logger.Error(err, "Error running controller")
