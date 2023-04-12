@@ -18,6 +18,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -26,6 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	appsinformers "k8s.io/client-go/informers/apps/v1"
@@ -37,6 +39,7 @@ import (
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
+	deploymentutil "k8s.io/kubectl/pkg/util/deployment"
 
 	samplev1alpha1 "k8s.io/sample-controller/pkg/apis/sonick8s/v1alpha1"
 	clientset "k8s.io/sample-controller/pkg/sonick8s/generated/clientset/versioned"
@@ -323,13 +326,18 @@ func (c *SonicDaemonsetDeploymentController) updateFooStatus(foo *samplev1alpha1
 	}
 
 	updated := false
-	//fooCopy.Status.DaemonsetList = []samplev1alpha1.DaemonSetItem{}
 	for _, v := range deployments {
 		if _, ok := dsMap[v.Name]; !ok {
 			updated = true
 			logger.Info(fmt.Sprintf("Add ds %s", v.Name))
 			dsMap[v.Name] = 1
 			fooCopy.Status.DaemonsetList = append(fooCopy.Status.DaemonsetList, samplev1alpha1.DaemonSetItem{DaemonSetName: v.Name, DaemonSetVersion: v.Spec.Template.Spec.Containers[0].Image})
+		}
+
+		// update daemonset if version is mismatch
+		if foo.Spec.DaemonSetVersion != v.Spec.Template.Spec.Containers[0].Image {
+			logger.Info(fmt.Sprintf("Need to update ds versoin for ds %s to %s", v.Name, foo.Spec.DaemonSetVersion))
+			c.updateDaemonset(v, foo.Spec.DaemonSetVersion)
 		}
 	}
 	if !updated {
@@ -395,6 +403,66 @@ func (c *SonicDaemonsetDeploymentController) handleObject(obj interface{}) {
 		c.enqueueFoo(foo)
 		return
 	}
+}
+
+func (c *SonicDaemonsetDeploymentController) getDeploymentPatch(podTemplate *corev1.PodTemplateSpec, annotations map[string]string) (types.PatchType, []byte, error) {
+	// Create a patch of the Deployment that replaces spec.template
+	patch, err := json.Marshal([]interface{}{
+		map[string]interface{}{
+			"op":    "replace",
+			"path":  "/spec/template",
+			"value": podTemplate,
+		},
+		map[string]interface{}{
+			"op":    "replace",
+			"path":  "/metadata/annotations",
+			"value": annotations,
+		},
+	})
+	return types.JSONPatchType, patch, err
+}
+
+func (c *SonicDaemonsetDeploymentController) updateDaemonset(ds *appsv1.DaemonSet, version string) (bool, error) {
+	klog.Infof("Aboute to update daemonset %s/%s to %s", ds.Namespace, ds, version)
+	targetDs := ds.DeepCopy()
+	var annotationsToSkip = map[string]bool{
+		corev1.LastAppliedConfigAnnotation:       true,
+		deploymentutil.RevisionAnnotation:        true,
+		deploymentutil.RevisionHistoryAnnotation: true,
+		deploymentutil.DesiredReplicasAnnotation: true,
+		deploymentutil.MaxReplicasAnnotation:     true,
+		appsv1.DeprecatedRollbackTo:              true,
+	}
+	delete(targetDs.Spec.Template.Labels, appsv1.DefaultDeploymentUniqueLabelKey)
+
+	// compute deployment annotations
+	annotations := map[string]string{}
+	for k := range annotationsToSkip {
+		if v, ok := ds.Annotations[k]; ok {
+			annotations[k] = v
+		}
+	}
+	for k, v := range targetDs.Annotations {
+		if !annotationsToSkip[k] {
+			annotations[k] = v
+		}
+	}
+
+	targetDs.Spec.Template.Spec.Containers[0].Image = version
+	patchType, patch, err := c.getDeploymentPatch(&targetDs.Spec.Template, targetDs.Annotations)
+	if err != nil {
+		return false, fmt.Errorf("failed restoring revision %s: %v", targetDs.ResourceVersion, err)
+	}
+
+	patchOptions := metav1.PatchOptions{}
+
+	// update ds revision
+	if _, err = c.kubeclientset.AppsV1().DaemonSets(targetDs.Namespace).Patch(context.TODO(), targetDs.Name, patchType, patch, patchOptions); err != nil {
+		klog.Errorf("Updating daemonset %s/%s is failed:%v", targetDs.Namespace, targetDs.Name, err)
+		return false, fmt.Errorf("failed restoring revision %s: %v", targetDs.ResourceVersion, err)
+	}
+	klog.Infof("Updating daemonset %s/%s is successful", targetDs.Namespace, targetDs.Name)
+	return true, nil
 }
 
 // newDeployment creates a new Deployment for a Foo resource. It also sets

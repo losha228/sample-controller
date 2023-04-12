@@ -7,4 +7,5 @@ spec:
   scopeType: datacenter
   scopeValue: starlab
   daemonSetType: telemetry
-  daemonSetVersion: telemetry-20220531.24
+  # nginx:1.15.2
+  daemonSetVersion: nginx:1.14.2
