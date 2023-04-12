@@ -366,16 +366,16 @@ func (c *SonicDaemonsetDeploymentController) handleObject(obj interface{}) {
 	if ownerRef := metav1.GetControllerOf(object); ownerRef != nil {
 		// If this object is not owned by a Foo, we should not do anything more
 		// with it.
-		if ownerRef.Kind != "Foo" {
+		if ownerRef.Kind == "" {
 			return
 		}
 
-		foo, err := c.foosLister.SonicDaemonSetDeployments(object.GetNamespace()).Get(ownerRef.Name)
+		foo, err := c.foosLister.SonicDaemonSetDeployments(object.GetNamespace()).Get("dc-ds-demo")
 		if err != nil {
 			logger.V(4).Info("Ignore orphaned object", "object", klog.KObj(object), "foo", ownerRef.Name)
 			return
 		}
-
+		logger.V(4).Info("enque the dc-ds-demo")
 		c.enqueueFoo(foo)
 		return
 	}
