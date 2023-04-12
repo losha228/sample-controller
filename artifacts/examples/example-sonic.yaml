@@ -1,6 +1,10 @@
 apiVersion: sonic.k8s.io/v1alpha1
-kind: DcDaemonSet
+kind: SonicDaemonSetDeployment
 metadata:
   name: example-dc-daemonset
 spec:
-  daemonsetVersion: telemetry-20220531.24
+  deploymentName: dc-ds-demo
+  scopeType: datacenter
+  scopeValue: starlab
+  daemonSetType: telemetry
+  daemonSetVersion: telemetry-20220531.24
