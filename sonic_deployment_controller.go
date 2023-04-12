@@ -315,6 +315,7 @@ func (c *SonicDaemonsetDeploymentController) updateFooStatus(foo *samplev1alpha1
 	// NEVER modify objects from the store. It's a read-only, local cache.
 	// You can use DeepCopy() to make a deep copy of original object and modify this copy
 	// Or create a copy manually for better performance
+	logger := klog.LoggerWithValues(klog.FromContext(context.TODO()), "resourceName", foo.Name)
 	fooCopy := foo.DeepCopy()
 	dsMap := make(map[string]int)
 	for _, v := range fooCopy.Status.DaemonsetList {
@@ -322,10 +323,11 @@ func (c *SonicDaemonsetDeploymentController) updateFooStatus(foo *samplev1alpha1
 	}
 
 	updated := false
-	fooCopy.Status.DaemonsetList = []samplev1alpha1.DaemonSetItem{}
+	//fooCopy.Status.DaemonsetList = []samplev1alpha1.DaemonSetItem{}
 	for _, v := range deployments {
 		if _, ok := dsMap[v.Name]; !ok {
 			updated = true
+			logger.Info(fmt.Sprintf("Add ds %s", v.Name))
 			dsMap[v.Name] = 1
 			fooCopy.Status.DaemonsetList = append(fooCopy.Status.DaemonsetList, samplev1alpha1.DaemonSetItem{DaemonSetName: v.Name, DaemonSetVersion: v.Spec.Template.Spec.Containers[0].Image})
 		}
