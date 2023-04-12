@@ -28,7 +28,7 @@ import (
 
 type SonicV1alpha1Interface interface {
 	RESTClient() rest.Interface
-	DcDaemonSetsGetter
+	SonicDaemonSetDeploymentsGetter
 }
 
 // SonicV1alpha1Client is used to interact with features provided by the sonic.k8s.io group.
@@ -36,8 +36,8 @@ type SonicV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *SonicV1alpha1Client) DcDaemonSets(namespace string) DcDaemonSetInterface {
-	return newDcDaemonSets(c, namespace)
+func (c *SonicV1alpha1Client) SonicDaemonSetDeployments(namespace string) SonicDaemonSetDeploymentInterface {
+	return newSonicDaemonSetDeployments(c, namespace)
 }
 
 // NewForConfig creates a new SonicV1alpha1Client for the given config.

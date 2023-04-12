@@ -28,8 +28,8 @@ type FakeSonicV1alpha1 struct {
 	*testing.Fake
 }
 
-func (c *FakeSonicV1alpha1) DcDaemonSets(namespace string) v1alpha1.DcDaemonSetInterface {
-	return &FakeDcDaemonSets{c, namespace}
+func (c *FakeSonicV1alpha1) SonicDaemonSetDeployments(namespace string) v1alpha1.SonicDaemonSetDeploymentInterface {
+	return &FakeSonicDaemonSetDeployments{c, namespace}
 }
 
 // RESTClient returns a RESTClient that is used to communicate

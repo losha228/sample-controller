@@ -24,8 +24,8 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
-	// DcDaemonSets returns a DcDaemonSetInformer.
-	DcDaemonSets() DcDaemonSetInformer
+	// SonicDaemonSetDeployments returns a SonicDaemonSetDeploymentInformer.
+	SonicDaemonSetDeployments() SonicDaemonSetDeploymentInformer
 }
 
 type version struct {
@@ -39,7 +39,7 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
-// DcDaemonSets returns a DcDaemonSetInformer.
-func (v *version) DcDaemonSets() DcDaemonSetInformer {
-	return &dcDaemonSetInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+// SonicDaemonSetDeployments returns a SonicDaemonSetDeploymentInformer.
+func (v *version) SonicDaemonSetDeployments() SonicDaemonSetDeploymentInformer {
+	return &sonicDaemonSetDeploymentInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

@@ -53,8 +53,8 @@ func (f *genericInformer) Lister() cache.GenericLister {
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
 	// Group=sonic.k8s.io, Version=v1alpha1
-	case v1alpha1.SchemeGroupVersion.WithResource("dcdaemonsets"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Sonic().V1alpha1().DcDaemonSets().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("sonicdaemonsetdeployments"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Sonic().V1alpha1().SonicDaemonSetDeployments().Informer()}, nil
 
 	}
 

@@ -18,10 +18,10 @@ limitations under the License.
 
 package v1alpha1
 
-// DcDaemonSetListerExpansion allows custom methods to be added to
-// DcDaemonSetLister.
-type DcDaemonSetListerExpansion interface{}
+// SonicDaemonSetDeploymentListerExpansion allows custom methods to be added to
+// SonicDaemonSetDeploymentLister.
+type SonicDaemonSetDeploymentListerExpansion interface{}
 
-// DcDaemonSetNamespaceListerExpansion allows custom methods to be added to
-// DcDaemonSetNamespaceLister.
-type DcDaemonSetNamespaceListerExpansion interface{}
+// SonicDaemonSetDeploymentNamespaceListerExpansion allows custom methods to be added to
+// SonicDaemonSetDeploymentNamespaceLister.
+type SonicDaemonSetDeploymentNamespaceListerExpansion interface{}
