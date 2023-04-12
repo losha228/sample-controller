@@ -317,6 +317,10 @@ func (c *SonicDaemonsetDeploymentController) updateFooStatus(foo *samplev1alpha1
 	// Or create a copy manually for better performance
 	fooCopy := foo.DeepCopy()
 	dsMap := make(map[string]int)
+	for _, v := range fooCopy.Status.DaemonsetList {
+		dsMap[v.DaemonSetName] = 1
+	}
+
 	updated := false
 	for _, v := range deployments {
 		if _, ok := dsMap[v.Name]; !ok {
