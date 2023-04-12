@@ -23,26 +23,32 @@ import (
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// Foo is a specification for a Foo resource
-type DcDaemonSet struct {
+// SonicDaemonSetDeployment is a specification for a SonicDaemonSetDeployment resource
+type SonicDaemonSetDeployment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   DcDaemonSetSpec   `json:"spec"`
-	Status DcDaemonSetStatus `json:"status"`
+	Spec   SonicDaemonSetDeploymentSpec   `json:"spec"`
+	Status SonicDaemonSetDeploymentStatus `json:"status"`
 }
 
-// FooSpec is the spec for a Foo resource
-type DcDaemonSetSpec struct {
+// SonicDaemonSetDeploymentSpec is the spec for a SonicDaemonSetDeployment resource
+type SonicDaemonSetDeploymentSpec struct {
+	// ScopeType: datacenter or region
+	ScopeType  string `json:"scopeType"`
+	ScopeValue string `json:"scopeValue"`
+	// sonic feature such as telemetry, snmp, etc
+	DaemonSetType    string `json:"daemonSetType"`
 	DaemonSetVersion string `json:"daemonSetVersion"`
 	Pause            bool   `json:"pause"`
 }
 
-// FooStatus is the status for a Foo resource
-type DcDaemonSetStatus struct {
-	DesiredDaemonSetCount int             `json:"desiredDaemonSetCount"`
-	CurrentDaemonSetCount int             `json:"currentDaemonSetCount"`
-	DaemonsetList         []DaemonSetItem `json:"daemonsetList"`
+// SonicDaemonSetDeploymentStatus is the status for a SonicDaemonSetDeployment resource
+type SonicDaemonSetDeploymentStatus struct {
+	DesiredDaemonSetCount         int             `json:"desiredDaemonSetCount"`
+	CurrentDaemonSetCount         int             `json:"currentDaemonSetCount"`
+	DaemonsetList                 []DaemonSetItem `json:"daemonSetList"`
+	UpdateInProgressDaemonsetList []DaemonSetItem `json:"updateInProgressDaemonSetList"`
 }
 
 type DaemonSetItem struct {
@@ -52,10 +58,10 @@ type DaemonSetItem struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// FooList is a list of Foo resources
-type DcDaemonSetList struct {
+// SonicDaemonSetDeploymentList is a list of SonicDaemonSetDeployment resources
+type SonicDaemonSetDeploymentList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata"`
 
-	Items []DcDaemonSet `json:"items"`
+	Items []SonicDaemonSetDeployment `json:"items"`
 }
