@@ -34,6 +34,7 @@ type SonicDaemonSetDeployment struct {
 
 // SonicDaemonSetDeploymentSpec is the spec for a SonicDaemonSetDeployment resource
 type SonicDaemonSetDeploymentSpec struct {
+	DeploymentName string `json:"deploymentName"`
 	// ScopeType: datacenter or region
 	ScopeType  string `json:"scopeType"`
 	ScopeValue string `json:"scopeValue"`

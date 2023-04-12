@@ -20,6 +20,8 @@ spec:
             spec:
               type: object
               properties:
+                deploymentName:
+                  type: string
                 scopeType:
                   type: string
                 scopeValue:
