@@ -322,6 +322,7 @@ func (c *SonicDaemonsetDeploymentController) updateFooStatus(foo *samplev1alpha1
 	}
 
 	updated := false
+	fooCopy.Status.DaemonsetList = []samplev1alpha1.DaemonSetItem{}
 	for _, v := range deployments {
 		if _, ok := dsMap[v.Name]; !ok {
 			updated = true
