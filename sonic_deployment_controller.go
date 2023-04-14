@@ -22,11 +22,15 @@ import (
 	"fmt"
 	"time"
 
+	"reflect"
+	"unsafe"
+
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -40,7 +44,6 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
 	deploymentutil "k8s.io/kubectl/pkg/util/deployment"
-
 	samplev1alpha1 "k8s.io/sample-controller/pkg/apis/sonick8s/v1alpha1"
 	clientset "k8s.io/sample-controller/pkg/sonick8s/generated/clientset/versioned"
 	samplescheme "k8s.io/sample-controller/pkg/sonick8s/generated/clientset/versioned/scheme"
@@ -310,7 +313,7 @@ func (c *SonicDaemonsetDeploymentController) syncHandler(ctx context.Context, ke
 		return err
 	}
 
-	c.recorder.Event(foo, corev1.EventTypeNormal, SuccessSynced, MessageResourceSynced)
+	c.recorder.Event(foo, corev1.EventTypeNormal, SuccessSynced, "SonicDaemonsetDeployment")
 	return nil
 }
 
@@ -322,8 +325,14 @@ func (c *SonicDaemonsetDeploymentController) updateFooStatus(foo *samplev1alpha1
 	fooCopy := foo.DeepCopy()
 	fooCopy.Status.DaemonsetList = []samplev1alpha1.DaemonSetItem{}
 	//dsMap := make(map[string]string)
+	totalNum := 0
+	currentNum := 0
 
 	for _, v := range deployments {
+		totalNum++
+		if foo.Spec.DaemonSetVersion == v.Spec.Template.Spec.Containers[0].Image {
+			currentNum++
+		}
 		fooCopy.Status.DaemonsetList = append(fooCopy.Status.DaemonsetList, samplev1alpha1.DaemonSetItem{DaemonSetName: v.Name, DaemonSetVersion: v.Spec.Template.Spec.Containers[0].Image})
 		/*
 			if _, ok := dsMap[v.Name]; !ok {
@@ -344,11 +353,14 @@ func (c *SonicDaemonsetDeploymentController) updateFooStatus(foo *samplev1alpha1
 		// update daemonset if version is mismatch
 
 	}
+	fooCopy.Status.CurrentDaemonSetCount = currentNum
+	fooCopy.Status.DesiredDaemonSetCount = totalNum
 	_, err := c.sampleclientset.SonicV1alpha1().SonicDaemonSetDeployments(foo.Namespace).UpdateStatus(context.TODO(), fooCopy, metav1.UpdateOptions{})
 	//rolling update for daemonset
 	for _, v := range deployments {
 		if foo.Spec.DaemonSetVersion != v.Spec.Template.Spec.Containers[0].Image {
 			logger.Info(fmt.Sprintf("Need to update ds versoin for ds %s to %s", v.Name, foo.Spec.DaemonSetVersion))
+			c.recorder.Event(foo, corev1.EventTypeNormal, "DaemonSetUpdate", fmt.Sprintf("%s is updated", v.Name))
 			c.updateDaemonset(v, foo.Spec.DaemonSetVersion)
 			time.Sleep(10 * time.Second)
 			break
@@ -484,3 +496,37 @@ func (c *SonicDaemonsetDeploymentController) updateDaemonset(ds *appsv1.DaemonSe
 // newDeployment creates a new Deployment for a Foo resource. It also sets
 // the appropriate OwnerReferences on the resource so handleObject can discover
 // the Foo resource that 'owns' it.
+
+func createSelector(k, v string) (labels.Selector, error) {
+	selector := labels.NewSelector()
+	//for k, v := range ps.MatchLabels {
+	r, err := newRequirement(k, selection.Equals, []string{v})
+	if err != nil {
+		return nil, err
+	}
+	selector = selector.Add(*r)
+	//}
+	return selector, nil
+}
+
+func newRequirement(key string, op selection.Operator, vals []string) (*labels.Requirement, error) {
+	sel := &labels.Requirement{}
+	selVal := reflect.ValueOf(sel)
+	val := reflect.Indirect(selVal)
+
+	keyField := val.FieldByName("key")
+	keyFieldPtr := (*string)(unsafe.Pointer(keyField.UnsafeAddr()))
+	*keyFieldPtr = key
+
+	opField := val.FieldByName("operator")
+	opFieldPtr := (*selection.Operator)(unsafe.Pointer(opField.UnsafeAddr()))
+	*opFieldPtr = op
+
+	if len(vals) > 0 {
+		valuesField := val.FieldByName("strValues")
+		valuesFieldPtr := (*[]string)(unsafe.Pointer(valuesField.UnsafeAddr()))
+		*valuesFieldPtr = vals
+	}
+
+	return sel, nil
+}
