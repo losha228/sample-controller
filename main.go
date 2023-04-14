@@ -25,11 +25,14 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
 	"k8s.io/sample-controller/pkg/signals"
+
 	// Uncomment the following line to load the gcp plugin (only required to authenticate against GKE clusters).
 	// _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 
 	clientset "k8s.io/sample-controller/pkg/generated/clientset/versioned"
 	informers "k8s.io/sample-controller/pkg/generated/informers/externalversions"
+	sonicclientset "k8s.io/sample-controller/pkg/sonick8s/generated/clientset/versioned"
+	sonicinformers "k8s.io/sample-controller/pkg/sonick8s/generated/informers/externalversions"
 )
 
 var (
@@ -66,6 +69,26 @@ func main() {
 	kubeInformerFactory := kubeinformers.NewSharedInformerFactory(kubeClient, time.Second*30)
 	exampleInformerFactory := informers.NewSharedInformerFactory(exampleClient, time.Second*30)
 
+	// sonic resource client
+	sonicDsClient, err := sonicclientset.NewForConfig(cfg)
+	if err != nil {
+		logger.Error(err, "Error building kubernetes clientset")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
+
+	//sonickubeInformerFactory := kubeinformers.NewSharedInformerFactory(kubeClient, time.Second*30)
+	sonicInformerFactory := sonicinformers.NewSharedInformerFactory(sonicDsClient, time.Second*30)
+	sonicController := NewSonicDaemonsetDeploymentController(ctx, kubeClient, sonicDsClient,
+		kubeInformerFactory.Apps().V1().DaemonSets(),
+		sonicInformerFactory.Sonic().V1alpha1().SonicDaemonSetDeployments())
+
+	/*
+		if err = sonicController.Run(ctx, 2); err != nil {
+			logger.Error(err, "Error running controller")
+			klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+		}
+	*/
+
 	controller := NewController(ctx, kubeClient, exampleClient,
 		kubeInformerFactory.Apps().V1().Deployments(),
 		exampleInformerFactory.Samplecontroller().V1alpha1().Foos())
@@ -74,6 +97,12 @@ func main() {
 	// Start method is non-blocking and runs all registered informers in a dedicated goroutine.
 	kubeInformerFactory.Start(ctx.Done())
 	exampleInformerFactory.Start(ctx.Done())
+	sonicInformerFactory.Start(ctx.Done())
+	//go sonicController.Run(ctx, 2)
+	if err = sonicController.Run(ctx, 2); err != nil {
+		logger.Error(err, "Error running sonic controller")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
 
 	if err = controller.Run(ctx, 2); err != nil {
 		logger.Error(err, "Error running controller")

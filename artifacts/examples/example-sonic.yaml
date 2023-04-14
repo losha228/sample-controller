@@ -1,0 +1,11 @@
+apiVersion: sonic.k8s.io/v1alpha1
+kind: SonicDaemonSetDeployment
+metadata:
+  name: dc-ds-demo
+spec:
+  deploymentName: dc-ds-demo
+  scopeType: datacenter
+  scopeValue: starlab
+  daemonSetType: telemetry
+  # nginx:1.15.2
+  daemonSetVersion: nginx:1.14.2
