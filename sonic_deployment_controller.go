@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"reflect"
+	"sort"
 	"unsafe"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -327,7 +328,9 @@ func (c *SonicDaemonsetDeploymentController) updateFooStatus(foo *samplev1alpha1
 	//dsMap := make(map[string]string)
 	totalNum := 0
 	currentNum := 0
-
+	sort.Slice(deployments, func(i, j int) bool {
+		return deployments[i].Name < deployments[j].Name
+	})
 	for _, v := range deployments {
 		totalNum++
 		if foo.Spec.DaemonSetVersion == v.Spec.Template.Spec.Containers[0].Image {
