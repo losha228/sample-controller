@@ -1,0 +1,6 @@
+apiVersion: sonic.k8s.io/v1alpha1
+kind: DcDaemonSet
+metadata:
+  name: example-dc-daemonset
+spec:
+  daemonsetVersion: telemetry-20220531.24
