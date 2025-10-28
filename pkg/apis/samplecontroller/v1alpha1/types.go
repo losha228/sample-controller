@@ -23,62 +23,32 @@ import (
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// NetworkDevice is a specification for a NetworkDevice resource
-type NetworkDevice struct {
+// Foo is a specification for a Foo resource
+type Foo struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   NetworkDeviceSpec   `json:"spec"`
-	Status NetworkDeviceStatus `json:"status"`
+	Spec   FooSpec   `json:"spec"`
+	Status FooStatus `json:"status"`
 }
 
-// NetworkDeviceSpec is the spec for a NetworkDevice resource
-type NetworkDeviceSpec struct {
-    OS OSInfo `json:"os,omitempty"`
+// FooSpec is the spec for a Foo resource
+type FooSpec struct {
+	DeploymentName string `json:"deploymentName"`
+	Replicas       *int32 `json:"replicas"`
 }
 
-type OSInfo struct {
-    OSType  string `json:"os-type,omitempty"`
-    Version string `json:"version,omitempty"`
+// FooStatus is the status for a Foo resource
+type FooStatus struct {
+	AvailableReplicas int32 `json:"availableReplicas"`
 }
 
-// NetworkDeviceStatus is the status for a NetworkDevice resource
-type NetworkDeviceStatus struct {
-    State             string              `json:"state,omitempty"`
-    LastTransitionTime string             `json:"lastTransitionTime,omitempty"`
-    OS                OSStatus            `json:"os,omitempty"`
-    Conditions        []Condition         `json:"conditions,omitempty"`
-    Operation         OperationStatus     `json:"operation,omitempty"`
-}
-// Condition represents a status condition
-type Condition struct {
-    Type               string      `json:"type,omitempty"`
-    Status             string      `json:"status,omitempty"`
-    LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty"`
-    Reason             string      `json:"reason,omitempty"`
-    Message            string      `json:"message,omitempty"`
-}
-
-// OperationStatus describes an operation in status
-type OperationStatus struct {
-    Name            string           `json:"name,omitempty"`
-    ID              string           `json:"id,omitempty"`
-    Status          string           `json:"status,omitempty"`
-    OperationAction OperationAction  `json:"operationAction,omitempty"`
-}
-
-// OperationAction describes the action of an operation
-type OperationAction struct {
-    Name   string `json:"name,omitempty"`
-    ID     string `json:"id,omitempty"`
-    Status string `json:"status,omitempty"`
-}
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// NetworkDeviceList is a list of NetworkDevice resources
-type NetworkDeviceList struct {
+// FooList is a list of Foo resources
+type FooList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata"`
 
-	Items []NetworkDevice `json:"items"`
+	Items []Foo `json:"items"`
 }
