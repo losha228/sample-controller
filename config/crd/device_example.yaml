@@ -7,24 +7,3 @@ spec:
   os:
     os-type: "SONiC"
     version: "202305"
-status:
-  state: "Healthy"
-  lastTransitionTime: "2025-10-28T12:00:00Z"
-  os:
-    os-type: "SONiC"
-    version: "202305"
-  operation:
-    id: "op-123"
-    name: "Upgrade"
-    status: "Completed"
-    operationAction:
-      id: "action-1"
-      name: "Install"
-      status: "Success"
-  conditions:
-    - type: "Ready"
-      status: "True"
-      lastProbeTime: "2025-10-28T12:00:00Z"
-      lastTransitionTime: "2025-10-28T12:00:00Z"
-      reason: "AllSystemsGo"
-      message: "Device is ready"

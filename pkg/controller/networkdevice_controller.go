@@ -233,6 +233,16 @@ func (c *Controller) syncHandler(ctx context.Context, objectRef cache.ObjectName
 		return err
 	}
 
+	// if the status is nil, initialize it
+	if device.Status.State == "" {
+		device.Status = samplev1alpha1.NetworkDeviceStatus{
+			State: "Healthy",
+		}
+		c.updateNetworkDeviceStatus(ctx, device)
+		logger.Info("Initialized NetworkDevice status", "deviceStatus", device.Status)
+		return nil
+	}
+
 	// if device has no status or no operation, nothing to do
 	if device.Status.Operation == nil {
 		logger.Info("NetworkDevice has no operation defined, skipping processing")
