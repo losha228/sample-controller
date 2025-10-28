@@ -48,23 +48,23 @@ import (
 const controllerAgentName = "networkdevice-controller"
 
 const (
-	// SuccessSynced is used as part of the Event 'reason' when a Foo is synced
+	// SuccessSynced is used as part of the Event 'reason' when a NetworkDevice is synced
 	SuccessSynced = "Synced"
-	// ErrResourceExists is used as part of the Event 'reason' when a Foo fails
+	// ErrResourceExists is used as part of the Event 'reason' when a NetworkDevice fails
 	// to sync due to a Deployment of the same name already existing.
 	ErrResourceExists = "ErrResourceExists"
 
 	// MessageResourceExists is the message used for Events when a resource
 	// fails to sync due to a Deployment already existing
-	MessageResourceExists = "Resource %q already exists and is not managed by Foo"
-	// MessageResourceSynced is the message used for an Event fired when a Foo
+	MessageResourceExists = "Resource %q already exists and is not managed by NetworkDevice"
+	// MessageResourceSynced is the message used for an Event fired when a NetworkDevice
 	// is synced successfully
-	MessageResourceSynced = "Foo synced successfully"
+	MessageResourceSynced = "NetworkDevice synced successfully"
 	// FieldManager distinguishes this controller from other things writing to API objects
 	FieldManager = controllerAgentName
 )
 
-// Controller is the controller implementation for Foo resources
+// Controller is the controller implementation for NetworkDevice resources
 type Controller struct {
 	// kubeclientset is a standard kubernetes clientset
 	kubeclientset kubernetes.Interface
@@ -144,7 +144,7 @@ func (c *Controller) Run(ctx context.Context, workers int) error {
 	logger := klog.FromContext(ctx)
 
 	// Start the informer factories to begin populating the informer caches
-	logger.Info("Starting Foo controller")
+	logger.Info("Starting NetworkDevice controller")
 
 	// Wait for the caches to be synced before starting workers
 	logger.Info("Waiting for informer caches to sync")
@@ -154,7 +154,7 @@ func (c *Controller) Run(ctx context.Context, workers int) error {
 	}
 
 	logger.Info("Starting workers", "count", workers)
-	// Launch two workers to process Foo resources
+	// Launch two workers to process NetworkDevice resources
 	for i := 0; i < workers; i++ {
 		go wait.UntilWithContext(ctx, c.runWorker, time.Second)
 	}
@@ -215,7 +215,7 @@ func (c *Controller) processNextWorkItem(ctx context.Context) bool {
 }
 
 // syncHandler compares the actual state with the desired, and attempts to
-// converge the two. It then updates the Status block of the Foo resource
+// converge the two. It then updates the Status block of the NetworkDevice resource
 // with the current status of the resource.
 func (c *Controller) syncHandler(ctx context.Context, objectRef cache.ObjectName) error {
 	logger := klog.LoggerWithValues(klog.FromContext(ctx), "objectRef", objectRef)
@@ -345,9 +345,9 @@ func (c *Controller) handleObject(obj interface{}) {
 	}
 	logger.V(4).Info("Processing object", "object", klog.KObj(object))
 	if ownerRef := metav1.GetControllerOf(object); ownerRef != nil {
-		// If this object is not owned by a Foo, we should not do anything more
+		// If this object is not owned by a NetworkDevice, we should not do anything more
 		// with it.
-		if ownerRef.Kind != "Foo" {
+		if ownerRef.Kind != "NetworkDevice" {
 			return
 		}
 
