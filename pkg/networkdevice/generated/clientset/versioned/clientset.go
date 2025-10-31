@@ -25,7 +25,7 @@ import (
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
-	sonick8sv1 "k8s.io/sample-controller/pkg/generated/clientset/versioned/typed/networkdevice/v1"
+	sonick8sv1 "k8s.io/sample-controller/pkg/networkdevice/generated/clientset/versioned/typed/networkdevice/v1"
 )
 
 type Interface interface {

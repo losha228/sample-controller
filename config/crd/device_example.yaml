@@ -1,0 +1,11 @@
+apiVersion: sonick8s.io/v1alpha1
+kind: NetworkDevice
+metadata:
+  name: example-networkdevice
+  namespace: default
+spec:
+  os:
+    type: "LeafRouter"
+    osVersion: "202305"
+    firmwareProfile: "test-profile"
+    operation: "OSUpgrade"

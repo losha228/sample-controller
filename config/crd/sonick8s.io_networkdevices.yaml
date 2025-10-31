@@ -1,0 +1,80 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.19.0
+  name: networkdevices.sonick8s.io
+spec:
+  group: sonick8s.io
+  names:
+    kind: NetworkDevice
+    listKind: NetworkDeviceList
+    plural: networkdevices
+    singular: networkdevice
+  scope: Namespaced
+  versions:
+  - name: v1
+    schema:
+      openAPIV3Schema:
+        description: NetworkDevice is a specification for a NetworkDevice resource
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: NetworkDeviceSpec is the spec for a NetworkDevice resource
+            properties:
+              firmwareProfile:
+                type: string
+              operation:
+                type: string
+              operationAction:
+                type: string
+              osVersion:
+                type: string
+              type:
+                description: device type of the network device
+                type: string
+            type: object
+          status:
+            description: NetworkDeviceStatus is the status for a NetworkDevice resource
+            properties:
+              lastTransitionTime:
+                description: last transition time of the network device state
+                format: date-time
+                type: string
+              operationActionState:
+                description: current operation action state of the network device
+                type: string
+              operationState:
+                description: current operation state of the network device
+                type: string
+              osVersion:
+                description: current OS version of the network device
+                type: string
+              state:
+                description: current state of the network device
+                type: string
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
