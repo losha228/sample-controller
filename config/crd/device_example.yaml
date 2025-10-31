@@ -1,0 +1,9 @@
+apiVersion: sonick8s.io/v1alpha1
+kind: NetworkDevice
+metadata:
+  name: example-networkdevice
+  namespace: default
+spec:
+  os:
+    os-type: "SONiC"
+    version: "202305"
