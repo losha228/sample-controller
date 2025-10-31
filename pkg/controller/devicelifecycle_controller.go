@@ -28,11 +28,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
-	appsinformers "k8s.io/client-go/informers/apps/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	appslisters "k8s.io/client-go/listers/apps/v1"
+	corelisters "k8s.io/client-go/listers/core/v1"
+	coreinformers "k8s.io/client-go/informers/core/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
@@ -72,8 +72,8 @@ type DeviceLifecycleController struct {
 	// sampleclientset is a clientset for our own API group
 	sampleclientset clientset.Interface
 
-	deploymentsLister appslisters.DeploymentLister
-	deploymentsSynced cache.InformerSynced
+	nodesLister		corelisters.NodeLister
+    nodesSynced cache.InformerSynced
 	networkDeviceLister        listers.NetworkDeviceLister
 	networkDevicesSynced        cache.InformerSynced
 
@@ -96,7 +96,7 @@ func NewDeviceLifecycleController(
 	ctx context.Context,
 	kubeclientset kubernetes.Interface,
 	sampleclientset clientset.Interface,
-	deploymentInformer appsinformers.DeploymentInformer,
+	nodeInformer coreinformers.NodeInformer,
 	networkDeviceInformer informers.NetworkDeviceInformer) *DeviceLifecycleController {
 	logger := klog.FromContext(ctx)
 
@@ -118,8 +118,8 @@ func NewDeviceLifecycleController(
 	controller := &DeviceLifecycleController{
 		kubeclientset:     kubeclientset,
 		sampleclientset:   sampleclientset,
-		deploymentsLister: deploymentInformer.Lister(),
-		deploymentsSynced: deploymentInformer.Informer().HasSynced,
+		nodesLister:      nodeInformer.Lister(),
+		nodesSynced:      nodeInformer.Informer().HasSynced,
 		networkDeviceLister:        networkDeviceInformer.Lister(),
 		networkDevicesSynced:        networkDeviceInformer.Informer().HasSynced,
 		workqueue:         workqueue.NewTypedRateLimitingQueue(ratelimiter),
@@ -153,7 +153,7 @@ func (c *DeviceLifecycleController) Run(ctx context.Context, workers int) error 
 	// Wait for the caches to be synced before starting workers
 	logger.Info("Waiting for informer caches to sync")
 
-	if ok := cache.WaitForCacheSync(ctx.Done(), c.deploymentsSynced, c.networkDevicesSynced); !ok {
+	if ok := cache.WaitForCacheSync(ctx.Done(), c.nodesSynced, c.networkDevicesSynced); !ok {
 		return fmt.Errorf("failed to wait for caches to sync")
 	}
 

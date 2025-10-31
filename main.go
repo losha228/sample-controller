@@ -67,7 +67,7 @@ func main() {
 	exampleInformerFactory := informers.NewSharedInformerFactory(exampleClient, time.Second*30)
 
 	controller := controller.NewDeviceLifecycleController(ctx, kubeClient, exampleClient,
-		kubeInformerFactory.Apps().V1().Deployments(),
+		kubeInformerFactory.Core().V1().Nodes(),		
 		exampleInformerFactory.Sonick8s().V1().NetworkDevices())
 
 	// notice that there is no need to run Start methods in a separate goroutine. (i.e. go kubeInformerFactory.Start(ctx.done())
