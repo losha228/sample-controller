@@ -14,7 +14,7 @@ spec:
     singular: networkdevice
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - name: v1
     schema:
       openAPIV3Schema:
         description: NetworkDevice is a specification for a NetworkDevice resource
@@ -39,67 +39,36 @@ spec:
           spec:
             description: NetworkDeviceSpec is the spec for a NetworkDevice resource
             properties:
-              os:
-                properties:
-                  os-type:
-                    type: string
-                  version:
-                    type: string
-                type: object
+              firmwareProfile:
+                type: string
+              operation:
+                type: string
+              operationAction:
+                type: string
+              osVersion:
+                type: string
+              type:
+                description: device type of the network device
+                type: string
             type: object
           status:
             description: NetworkDeviceStatus is the status for a NetworkDevice resource
             properties:
-              conditions:
-                items:
-                  description: Condition represents a status condition
-                  properties:
-                    lastProbeTime:
-                      format: date-time
-                      type: string
-                    lastTransitionTime:
-                      format: date-time
-                      type: string
-                    message:
-                      type: string
-                    reason:
-                      type: string
-                    status:
-                      type: string
-                    type:
-                      type: string
-                  type: object
-                type: array
               lastTransitionTime:
+                description: last transition time of the network device state
+                format: date-time
                 type: string
-              operation:
-                description: OperationStatus describes an operation in status
-                properties:
-                  id:
-                    type: string
-                  name:
-                    type: string
-                  operationAction:
-                    description: OperationAction describes the action of an operation
-                    properties:
-                      id:
-                        type: string
-                      name:
-                        type: string
-                      status:
-                        type: string
-                    type: object
-                  status:
-                    type: string
-                type: object
-              os:
-                properties:
-                  os-type:
-                    type: string
-                  version:
-                    type: string
-                type: object
+              operationActionState:
+                description: current operation action state of the network device
+                type: string
+              operationState:
+                description: current operation state of the network device
+                type: string
+              osVersion:
+                description: current OS version of the network device
+                type: string
               state:
+                description: current state of the network device
                 type: string
             type: object
         required:

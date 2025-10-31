@@ -31,7 +31,7 @@ kube::codegen::gen_helpers \
 
 kube::codegen::gen_client \
     --with-watch \
-    --output-dir "${SCRIPT_ROOT}/pkg/sonick8s/generated" \
-    --output-pkg "${THIS_PKG}/pkg/sonick8s/generated" \
+    --output-dir "${SCRIPT_ROOT}/pkg/networkdevice/generated" \
+    --output-pkg "${THIS_PKG}/pkg/networkdevice/generated" \
     --boilerplate "${SCRIPT_ROOT}/hack/boilerplate.go.txt" \
     "${SCRIPT_ROOT}/pkg/apis"

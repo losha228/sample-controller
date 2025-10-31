@@ -5,5 +5,7 @@ metadata:
   namespace: default
 spec:
   os:
-    os-type: "SONiC"
-    version: "202305"
+    type: "LeafRouter"
+    osVersion: "202305"
+    firmwareProfile: "test-profile"
+    operation: "OSUpgrade"
